@@ -20,7 +20,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /var/www/html/portfolio
-                        
+            sudo su
             git checkout .
             git checkout master
             git pull
