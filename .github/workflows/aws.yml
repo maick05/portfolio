@@ -20,7 +20,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /var/www/html/portfolio
-            sudo su
             git config --global --add safe.directory /var/www/html/portfolio
             git checkout .
             git checkout master
