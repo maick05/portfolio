@@ -4,7 +4,7 @@ name: Push-to-EC2
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy:
@@ -20,7 +20,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /var/www/html/portfolio
-                        
+            git config --global --add safe.directory /var/www/html/portfolio
             git checkout .
             git checkout master
             git pull
