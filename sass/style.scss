@@ -682,9 +682,10 @@ h1, h2, h3, h4, h5, h6, figure {
 		color: white;
 		.name-left{
 			float: left;
+			color: white !important;
 		}
 		.value-right{
-			float: right;
+			float: right !important;
 		}
 	}
 }
