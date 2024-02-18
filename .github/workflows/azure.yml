@@ -1,0 +1,59 @@
+name: Push-to-Azure
+
+# Trigger deployment only on push to main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Azure on main branch push
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Azure login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Install Azure CLI
+      run: |
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+    - name: Retrieve secrets from Azure Key Vault
+      run: |
+        SSH_HOST=$(az keyvault secret show --name PORTFOLIO-SERVER-HOST --vault-name ${{ secrets.KEY_VAULT_NAME }} --query value -o tsv)
+        SSH_USERNAME=$(az keyvault secret show --name DEPLOY-SERVER-USER --vault-name ${{ secrets.KEY_VAULT_NAME }} --query value -o tsv)
+        SSH_PRIVATE_KEY=$(az keyvault secret show --name PORTFOLIO-SERVER-SSH --vault-name ${{ secrets.KEY_VAULT_NAME }} --query value -o tsv)
+
+        echo "SSH_HOST=$SSH_HOST" >> $GITHUB_ENV
+        echo "SSH_USERNAME=$SSH_USERNAME" >> $GITHUB_ENV
+        echo "SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY" >> $GITHUB_ENV
+      id: secrets_step
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          echo "$SSH_PRIVATE_KEY"  | base64 --decode > private_key.pem
+          chmod 600 private_key.pem
+          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+
+      - name: Execute SSH Command
+        run: |
+          eval "$(ssh-agent -s)"
+          set -x  # Ativa o modo de depuração
+          ssh-add private_key.pem
+
+          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "
+
+            cd /var/www/html/${{ secrets.TARGET_DIR }};
+
+            sudo git config --global --add safe.directory /var/www/html/${{ secrets.TARGET_DIR }};
+            sudo git checkout .;
+            sudo git checkout main;
+            sudo git pull;
+          "
