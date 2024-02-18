@@ -11,28 +11,28 @@ jobs:
     name: Deploy to Azure on main branch push
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Azure login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Install Azure CLI
-      run: |
-        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      - name: Install Azure CLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
-    - name: Retrieve secrets from Azure Key Vault
-      run: |
-        SSH_HOST=$(az keyvault secret show --name PORTFOLIO-SERVER-HOST --vault-name ${{ secrets.KEY_VAULT_NAME }} --query value -o tsv)
-        SSH_USERNAME=$(az keyvault secret show --name DEPLOY-SERVER-USER --vault-name ${{ secrets.KEY_VAULT_NAME }} --query value -o tsv)
-        SSH_PRIVATE_KEY=$(az keyvault secret show --name PORTFOLIO-SERVER-SSH --vault-name ${{ secrets.KEY_VAULT_NAME }} --query value -o tsv)
+      - name: Retrieve secrets from Azure Key Vault
+        run: |
+          SSH_HOST=$(az keyvault secret show --name PORTFOLIO-SERVER-HOST --vault-name ${{ secrets.KEY_VAULT_NAME }} --query value -o tsv)
+          SSH_USERNAME=$(az keyvault secret show --name DEPLOY-SERVER-USER --vault-name ${{ secrets.KEY_VAULT_NAME }} --query value -o tsv)
+          SSH_PRIVATE_KEY=$(az keyvault secret show --name PORTFOLIO-SERVER-SSH --vault-name ${{ secrets.KEY_VAULT_NAME }} --query value -o tsv)
 
-        echo "SSH_HOST=$SSH_HOST" >> $GITHUB_ENV
-        echo "SSH_USERNAME=$SSH_USERNAME" >> $GITHUB_ENV
-        echo "SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY" >> $GITHUB_ENV
-      id: secrets_step
+          echo "SSH_HOST=$SSH_HOST" >> $GITHUB_ENV
+          echo "SSH_USERNAME=$SSH_USERNAME" >> $GITHUB_ENV
+          echo "SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY" >> $GITHUB_ENV
+        id: secrets_step
 
       - name: Set up SSH
         run: |
